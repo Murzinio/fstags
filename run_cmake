@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if ! [ -d "cmake_output" ]; then
+    mkdir cmake_output
+fi
+
+cd cmake_output
+
+cmake ..
