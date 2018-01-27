@@ -36,6 +36,15 @@
         "algorithm": "cpp",
         "memory": "cpp",
         "memory_resource": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "bitset": "cpp",
+        "cinttypes": "cpp",
+        "cmath": "cpp",
+        "codecvt": "cpp",
+        "cstring": "cpp",
+        "filesystem": "cpp",
+        "fstream": "cpp",
+        "iomanip": "cpp",
+        "sstream": "cpp"
     }
 }

@@ -1,5 +1,7 @@
 // Std
 #include <iostream>
+#include <cctype>
+#include <algorithm>
 
 // Program
 #include "user_io.hpp"
@@ -9,15 +11,16 @@
     Public
 */
 
-User_io::User_io(const Raw_arg_count argc, const Raw_args& args)
+User_io::User_io(const Arg_count argc, const Args& args)
 {
+    fill_supported_args();
+
     if (argc.get() < 2)
     {
         print_usage();
     }
     else
     {
-        fill_supported_args();        
         parse_args(argc, args);
     }
 }
@@ -28,28 +31,72 @@ User_io::User_io(const Raw_arg_count argc, const Raw_args& args)
 
 void User_io::fill_supported_args()
 {
-    m_supported_args = std::array<User_io::Cli_arg_wrapper, supported_args_count>{
-        {"tag", "t", "Tags specified path.", Cli_arg::Tag}
-    };
+    m_supported_commands.at(0) = CommandFriendly(
+        Name("tag"), Option(""), Description("tags specified path")
+    );
 }
 
-void User_io::parse_args(const Raw_arg_count argc, const Raw_args& args)
+void User_io::parse_args(const Arg_count argc, const Args& args)
 {
-    for (auto i{ 0 }; i < argc.get(); ++i)
+    for (auto i{ 1 }; i < argc.get(); ++i) // ignore first arg
     {
-        const auto& arg{ args.get()[i] };
+        const auto arg{ args.get()[i] };
 
-        for (const auto& match : m_supported_args)
+        for (const auto& match : m_supported_commands)
         {
-            if (arg == match.name)
+            if (arg == "--" + match.name)
             {
-                m_args.push_back(match);
+                if (m_command.name != "")
+                {
+                    // command name already parsed
+                    print_usage();
+                    return;
+                }
 
-                logger::debug_log(logger::Message("tag parsed"));
+                m_command.name = arg;
+                m_command.name.erase(0, 2);
+            }
+            else if (arg == "-" + std::string(1, match.name.at(0)))
+            {
+                if (m_command.name != "")
+                {
+                    // command name already parsed using short name
+                    print_usage();
+                    return;
+                }
+
+                auto result = std::find_if(
+                    std::cbegin(m_supported_commands),
+                    std::cend(m_supported_commands),
+                    [&](auto command)
+                        { return command.name.at(0) == arg[1]; }
+                );
+
+                if (result != std::cend(m_supported_commands))
+                {
+                    m_command.name = result->name;
+                }
+                else
+                {
+                    print_usage();
+                    return;
+                }
+            }
+            else if (arg[0] != '-')
+            {
+                if (m_command.option != "")
+                {
+                    print_usage();
+                    return;
+                }
+                
+                m_command.option = arg;
             }
         }
-        
     }
+
+    logger::debug_log("command name: " + m_command.name);
+    logger::debug_log("command option: " + m_command.option);
 }
 
 void User_io::print_usage() const
@@ -59,7 +106,15 @@ R"(--------------------------
 --- fstags by Murzinio ---
 --------------------------
 
---- Usage ---
+--- Usage ---)" << "\n";
 
---path="directory path")";
+    for (const auto& arg : m_supported_commands)
+    {
+        auto separator{ "    " };
+        std::cout << "-" << arg.name.at(0) << separator;
+        std::cout << "--" << arg.name << separator;
+        std::cout << arg.description << "\n";
+    }
+
+    std::cout << std::flush;
 }

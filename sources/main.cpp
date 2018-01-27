@@ -14,7 +14,7 @@ int main(int argc, const char** args)
 {
     try
     {
-        User_io io{ User_io::Raw_arg_count(argc), User_io::Raw_args(args) };
+        User_io io{ User_io::Arg_count(argc), User_io::Args(args) };
         Program program{ std::move(io) };
     }
     catch (const std::runtime_error& e)

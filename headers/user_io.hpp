@@ -9,34 +9,58 @@
 // Program
 #include "strong_type.hpp"
 
-static constexpr uint8_t supported_args_count{ 2 };
+static constexpr uint8_t supported_args_count{ 1 };
 
 class User_io
 {
-private:
-    enum class Cli_arg;
-
 public:
-    struct Cli_arg_wrapper
-    {
-        std::string name;
-        std::string short_name;
-        std::string description;
-
-        Cli_arg enum_val;
-    };
-
     /*
         Strong types.
     */
 
-    using Raw_arg_count =
+    using Arg_count =
         Strong_type<int, struct Raw_arg_count_>;
 
-    using Raw_args =
+    using Args =
         Strong_type<const char**, struct Raw_args_>;
 
-    User_io(const Raw_arg_count, const Raw_args&);
+    using Name =
+        Strong_type<std::string, struct Name_t>;
+
+    using Option =
+        Strong_type<std::string, struct Option_t>;
+
+    using Description =
+        Strong_type<std::string, struct Description_t>;
+
+    struct Command
+    {
+        Command() {};
+
+        Command(Name n, Option o)
+            : 
+            name(n.get()),
+            option(o.get()) {}
+
+        virtual ~Command() {};
+
+        std::string name;
+        std::string option;
+    };
+
+    struct CommandFriendly : public Command
+    {
+        CommandFriendly() {};
+
+        CommandFriendly(Name n, Option o, Description d)
+            : 
+            Command(n, o),
+            description(d.get()) {}
+
+        std::string description;
+    };
+
+    User_io(const Arg_count, const Args&);
 
     /**
      * Prints list of available cli arguments and their description.
@@ -44,15 +68,11 @@ public:
     void print_usage() const;
 
 private:
-    enum class Cli_arg
-    {
-        Tag
-    };
 
-    void parse_args(const Raw_arg_count, const Raw_args&);
+    void parse_args(const Arg_count, const Args&);
     void fill_supported_args();
 
-    std::vector<Cli_arg_wrapper> m_args;
+    Command m_command;
     
-    std::array<Cli_arg_wrapper, supported_args_count> m_supported_args;
+    std::array<CommandFriendly, supported_args_count> m_supported_commands;
 };
