@@ -11,18 +11,9 @@
     Public
 */
 
-User_io::User_io(const Arg_count argc, const Args& args)
+User_io::User_io()
 {
     fill_supported_args();
-
-    if (argc.get() < 2)
-    {
-        print_usage();
-    }
-    else
-    {
-        parse_args(argc, args);
-    }
 }
 
 /*
@@ -36,8 +27,12 @@ void User_io::fill_supported_args()
     );
 }
 
-void User_io::parse_args(const Arg_count argc, const Args& args)
+[[nodiscard]] User_io::Command 
+User_io::parse_args(const shared_types::Arg_count argc,
+                        const shared_types::Args& args) const
 {
+    Command command;
+
     for (auto i{ 1 }; i < argc.get(); ++i) // ignore first arg
     {
         const auto arg{ args.get()[i] };
@@ -46,57 +41,55 @@ void User_io::parse_args(const Arg_count argc, const Args& args)
         {
             if (arg == "--" + match.name)
             {
-                if (m_command.name != "")
+                if (command.name != "")
                 {
                     // command name already parsed
-                    print_usage();
-                    return;
+                    throw std::runtime_error("Invalid args");
                 }
 
-                m_command.name = arg;
-                m_command.name.erase(0, 2);
+                command.name = arg;
+                command.name.erase(0, 2);
             }
             else if (arg == "-" + std::string(1, match.name.at(0)))
             {
-                if (m_command.name != "")
+                if (command.name != "")
                 {
                     // command name already parsed using short name
-                    print_usage();
-                    return;
+                    throw std::runtime_error("Invalid args");
                 }
 
                 auto result = std::find_if(
                     std::cbegin(m_supported_commands),
                     std::cend(m_supported_commands),
-                    [&](auto command)
+                    [&](const auto& command)
                         { return command.name.at(0) == arg[1]; }
                 );
 
                 if (result != std::cend(m_supported_commands))
                 {
-                    m_command.name = result->name;
+                    command.name = result->name;
                 }
                 else
                 {
-                    print_usage();
-                    return;
+                    throw std::runtime_error("Invalid args");
                 }
             }
             else if (arg[0] != '-')
             {
-                if (m_command.option != "")
+                if (command.option != "")
                 {
-                    print_usage();
-                    return;
+                    throw std::runtime_error("Invalid args");
                 }
                 
-                m_command.option = arg;
+                command.option = arg;
             }
         }
     }
 
-    logger::debug_log("command name: " + m_command.name);
-    logger::debug_log("command option: " + m_command.option);
+    logger::debug_log("command name: " + command.name);
+    logger::debug_log("command option: " + command.option);
+
+    return command;
 }
 
 void User_io::print_usage() const

@@ -8,6 +8,8 @@
 
 // Program
 #include "strong_type.hpp"
+#include "shared_types.hpp"
+
 
 static constexpr uint8_t supported_args_count{ 1 };
 
@@ -17,12 +19,6 @@ public:
     /*
         Strong types.
     */
-
-    using Arg_count =
-        Strong_type<int, struct Raw_arg_count_>;
-
-    using Args =
-        Strong_type<const char**, struct Raw_args_>;
 
     using Name =
         Strong_type<std::string, struct Name_t>;
@@ -53,26 +49,25 @@ public:
         CommandFriendly() {};
 
         CommandFriendly(Name n, Option o, Description d)
-            : 
+            :
             Command(n, o),
             description(d.get()) {}
 
         std::string description;
     };
 
-    User_io(const Arg_count, const Args&);
+    User_io();
 
     /**
      * Prints list of available cli arguments and their description.
     */
     void print_usage() const;
 
-private:
+    [[nodiscard]]
+    Command parse_args(const shared_types::Arg_count, const shared_types::Args&) const;
 
-    void parse_args(const Arg_count, const Args&);
+private:
     void fill_supported_args();
 
-    Command m_command;
-    
     std::array<CommandFriendly, supported_args_count> m_supported_commands;
 };

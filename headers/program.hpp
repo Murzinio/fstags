@@ -5,12 +5,14 @@
 
 // Programo
 #include "user_io.hpp"
+#include "shared_types.hpp"
 
 
 class Program
 {
 public:
-    Program(User_io&&);
+    Program(const shared_types::Arg_count argc,
+                const shared_types::Args& args);
 
     Program(const Program& rhs) = delete;
     Program(Program&& rhs) = delete;
@@ -19,7 +21,5 @@ public:
     Program& operator=(Program&& rhs) = delete;
 
 private:
-    void print_usage() const;
-
     User_io m_io;
 };

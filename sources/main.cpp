@@ -14,8 +14,7 @@ int main(int argc, const char** args)
 {
     try
     {
-        User_io io{ User_io::Arg_count(argc), User_io::Args(args) };
-        Program program{ std::move(io) };
+        Program program{ shared_types::Arg_count(argc), shared_types::Args(args) };
     }
     catch (const std::runtime_error& e)
     {
