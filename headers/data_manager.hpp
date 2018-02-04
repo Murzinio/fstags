@@ -6,18 +6,24 @@
 #else
 #include <string_view>
 #endif
+
 #include <fstream>
 #include <string>
 
 // Program
 #include "strong_type.hpp"
 
+
 class Data_manager
 {
 public:
+#ifndef _MSC_VER
     using Path =
         Strong_type<const std::experimental::string_view, struct Path_>;
-
+#else
+    using Path =
+        Strong_type<const std::string_view, struct Path_>;
+#endif
     static const std::string m_data_path;
 
     /**

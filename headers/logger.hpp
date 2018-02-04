@@ -1,5 +1,10 @@
 // Std
+#ifndef _MSC_VER
 #include <experimental/string_view>
+#else
+#include <string_view>
+#endif
+
 #include <experimental/filesystem>
 #include <iostream>
 #include <fstream>
